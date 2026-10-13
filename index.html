@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tasadora de móviles usados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFF1; --panel:#FFFFFF; --ink:#111827; --muted:#5B6574; --line:#D6DCE2;
+  --accent:#0F766E; --accent-ink:#FFFFFF; --tag:#FFE45C; --tag-ink:#111827; --warn:#B45309; --warnbg:#FFF4E0; --bad:#B91C1C; --badbg:#FDECEC;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1417; --panel:#172025; --ink:#EAF0F2; --muted:#98A5AD; --line:#27333A;
+    --accent:#2DD4BF; --accent-ink:#0E1417; --warn:#F2B04A; --warnbg:#3A2E18; --bad:#FF7B7B; --badbg:#3A1E1E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1417; --panel:#172025; --ink:#EAF0F2; --muted:#98A5AD; --line:#27333A;
+  --accent:#2DD4BF; --accent-ink:#0E1417; --warn:#F2B04A; --warnbg:#3A2E18; --bad:#FF7B7B; --badbg:#3A1E1E;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.45}
+.wrap{max-width:1040px;margin:0 auto;padding:26px 16px 60px}
+h1{font-size:clamp(2rem,6vw,3.3rem);line-height:1.02;margin:0 0 8px;font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:0 0 24px;max-width:54ch}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
+@media (max-width:840px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.sec{margin-bottom:20px}
+.sec h2{font-size:1.05rem;margin:0 0 3px;font-weight:800}
+.sec p{margin:0 0 9px;color:var(--muted);font-size:.88rem}
+select,input[type=number]{width:100%;padding:12px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px}
+select:focus-visible,input:focus-visible,.chip input:focus-visible+span,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:.92rem;cursor:pointer;user-select:none}
+.chip span small{display:block;font-size:.76rem;color:var(--muted);font-weight:400}
+.chip input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.chip input:checked+span small{color:inherit;opacity:.85}
+.checks label{display:flex;gap:10px;align-items:center;margin:0 0 8px;cursor:pointer;font-size:.95rem}
+.checks input{width:18px;height:18px;accent-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lbl{display:block;font-weight:600;margin-bottom:6px;font-size:.92rem}
+.hidden{display:none}
+.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:840px){.result{position:static}}
+.tag{background:var(--tag);color:var(--tag-ink);border-radius:12px;padding:18px;position:relative;margin-bottom:12px}
+.tag::before{content:"";position:absolute;top:14px;right:14px;width:14px;height:14px;border-radius:50%;background:var(--panel);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.tag .t{font-size:.85rem;font-weight:600;opacity:.8}
+.tag .big{font-size:clamp(2.4rem,9vw,3.6rem);font-weight:800;line-height:1;letter-spacing:-.03em;margin:6px 0 4px}
+.tag .rg{font-size:.9rem}
+.sub{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px dashed var(--line)}
+.sub b{font-weight:800}
+.alert{border-radius:8px;padding:10px 12px;font-size:.9rem;margin-bottom:10px;background:var(--warnbg);color:var(--warn);border-left:4px solid var(--warn)}
+.alert.bad{background:var(--badbg);color:var(--bad);border-color:var(--bad)}
+ul.break{list-style:none;padding:0;margin:8px 0 0;font-size:.86rem;color:var(--muted)}
+ul.break li{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+ul.break li b{color:var(--ink);font-weight:600;white-space:nowrap}
+button.act{width:100%;margin-top:10px;padding:13px;font:inherit;font-weight:700;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.note{font-size:.82rem;color:var(--muted);margin:12px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tasadora de móviles usados</h1>
+  <p class="lead">Dime qué móvil es, cuánto lo has usado y cómo está. Te digo cuánto puede valer.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="sec">
+        <h2>El móvil</h2>
+        <div class="row2">
+          <div><label class="lbl" for="modelo">Modelo</label><select id="modelo"></select></div>
+          <div><label class="lbl" for="mem">Memoria</label><select id="mem"></select></div>
+        </div>
+        <div class="row2 hidden" id="otroBox" style="margin-top:12px">
+          <div><label class="lbl" for="pOrig">Precio de nuevo (€)</label><input id="pOrig" type="number" min="50" max="2500" value="400" inputmode="numeric"></div>
+          <div><label class="lbl" for="anOrig">Años desde que salió</label><input id="anOrig" type="number" min="0" max="12" value="4" inputmode="numeric"></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>El uso</h2>
+        <p>Cuánto tiempo lo has tenido y cómo lo has tratado.</p>
+        <div class="lbl">Años de uso</div>
+        <div class="chips" id="anios"></div>
+        <div class="lbl" style="margin-top:12px">Tipo de uso</div>
+        <div class="chips" id="uso"></div>
+        <div style="margin-top:12px;max-width:260px">
+          <label class="lbl" for="bat">Salud de la batería (%) <span style="font-weight:400;color:var(--muted)">si la sabes</span></label>
+          <input id="bat" type="number" min="40" max="100" placeholder="Ej. 85" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="sec">
+        <h2>Pantalla</h2>
+        <div class="chips" id="pantalla"></div>
+      </div>
+      <div class="sec">
+        <h2>Marco y carcasa</h2>
+        <div class="chips" id="marco"></div>
+      </div>
+
+      <div class="sec checks">
+        <h2>Daños y fallos</h2>
+        <p>Marca solo lo que le pase.</p>
+        <label><input type="checkbox" id="trasera"> Tapa trasera rota o agrietada</label>
+        <label><input type="checkbox" id="camara"> Cristal de la cámara roto o la cámara falla</label>
+        <label><input type="checkbox" id="carga"> No carga bien o el puerto está flojo</label>
+        <label><input type="checkbox" id="bio"> Huella o Face ID no funciona</label>
+        <label><input type="checkbox" id="audio"> Altavoz o micrófono con fallos</label>
+        <label><input type="checkbox" id="botones"> Botones que no funcionan bien</label>
+        <label><input type="checkbox" id="wifi"> Falla el Wi-Fi, el Bluetooth o la cobertura</label>
+        <label><input type="checkbox" id="mojado"> Se ha mojado alguna vez</label>
+        <label><input type="checkbox" id="pantnoorig"> Pantalla cambiada (no original)</label>
+        <label><input type="checkbox" id="noenciende"> No enciende</label>
+      </div>
+
+      <div class="sec checks">
+        <h2>Bloqueos y extras</h2>
+        <label><input type="checkbox" id="cuenta"> Sigue con la cuenta iCloud o Google puesta</label>
+        <label><input type="checkbox" id="imei"> IMEI bloqueado o denunciado</label>
+        <label><input type="checkbox" id="operador"> Bloqueado con un operador</label>
+        <label><input type="checkbox" id="caja"> Con caja y cargador</label>
+      </div>
+    </div>
+
+    <div class="result">
+      <div class="panel">
+        <div class="tag">
+          <div class="t">Te lo compran por</div>
+          <div class="big" id="pCompra">—</div>
+          <div class="rg" id="rCompra"></div>
+        </div>
+        <div id="avisos"></div>
+        <div class="sub"><span>Venta entre particulares</span><b id="pVenta">—</b></div>
+        <div class="sub"><span>Como estaría en buen estado</span><b id="pBuen">—</b></div>
+        <ul class="break" id="desglose"></ul>
+        <button class="act" id="copiar">Copiar tasación</button>
+        <button class="act alt" id="reset">Tasar otro móvil</button>
+        <p class="note">Precios orientativos del mercado de segunda mano en España. La tasación final depende de revisar el móvil en persona.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// [nombre, precio usado en buen estado, memoria base]
+const MODELOS={
+ "Apple":[["iPhone 16 Pro Max",780,256],["iPhone 16 Pro",650,128],["iPhone 16",470,128],["iPhone 15 Pro Max",650,256],["iPhone 15 Pro",540,128],["iPhone 15",380,128],["iPhone 14 Pro Max",520,128],["iPhone 14 Pro",450,128],["iPhone 14",340,128],["iPhone 13 Pro Max",420,128],["iPhone 13 Pro",360,128],["iPhone 13",280,128],["iPhone 13 mini",220,128],["iPhone 12 Pro Max",320,128],["iPhone 12 Pro",270,128],["iPhone 12",200,64],["iPhone 12 mini",170,64],["iPhone SE (2022)",130,64],["iPhone 11 Pro Max",200,64],["iPhone 11 Pro",170,64],["iPhone 11",150,64],["iPhone SE (2020)",85,64],["iPhone XS Max",130,64],["iPhone XS",100,64],["iPhone XR",90,64],["iPhone X",85,64],["iPhone 8 Plus",70,64],["iPhone 8",55,64],["iPhone 7 Plus",50,32],["iPhone 7",40,32],["iPhone 6s",30,32]],
+ "Samsung":[["Galaxy S24 Ultra",560,256],["Galaxy S24",330,128],["Galaxy S23 Ultra",400,256],["Galaxy S23",250,128],["Galaxy S22 Ultra",290,128],["Galaxy S22",180,128],["Galaxy S21 Ultra",220,128],["Galaxy S21+",170,128],["Galaxy S21",140,128],["Galaxy S20 FE",130,128],["Galaxy S20",120,128],["Galaxy S10+",110,128],["Galaxy S10",95,128],["Galaxy S9",60,64],["Galaxy S8",45,64],["Galaxy Note 20 Ultra",230,256],["Galaxy Note 10+",150,256],["Galaxy Note 9",90,128],["Galaxy A54",150,128],["Galaxy A53",130,128],["Galaxy A52s",110,128],["Galaxy A34",120,128],["Galaxy A33",95,128],["Galaxy A14",70,64],["Galaxy A13",55,64],["Galaxy Z Flip4",250,128],["Galaxy Z Fold4",420,256]],
+ "Xiaomi / Redmi / Poco":[["Xiaomi 12T Pro",230,256],["Xiaomi Mi 11",150,128],["Xiaomi Mi 10T Pro",120,128],["Xiaomi Mi 9",70,64],["Redmi Note 11 Pro",90,128],["Redmi Note 10 Pro",85,128],["Redmi Note 9 Pro",60,64],["Poco X5 Pro",130,128],["Poco F3",110,128]],
+ "Huawei / Honor":[["Huawei P40 Pro",140,256],["Huawei P30 Pro",100,128],["Huawei P30",70,128],["Huawei Mate 20 Pro",80,128],["Huawei P20 Pro",55,128],["Honor 50",100,128]],
+ "Google Pixel":[["Pixel 8",250,128],["Pixel 7a",190,128],["Pixel 7",150,128],["Pixel 6a",130,128],["Pixel 6",120,128],["Pixel 5",90,128],["Pixel 4a",60,128],["Pixel 3",40,64]],
+ "OnePlus":[["OnePlus 10 Pro",250,128],["OnePlus 9 Pro",170,128],["OnePlus 8T",110,128],["OnePlus Nord 2",100,128],["OnePlus Nord CE",80,128]],
+ "Otras marcas":[["Motorola Edge 30 Fusion",130,128],["Motorola Moto G73",90,128],["Sony Xperia 1 III",220,256],["Sony Xperia 10 IV",140,128],["Oppo Find X5 Lite",120,128],["Realme 9 Pro+",120,128]],
+ "Mi modelo no está":[["Otro modelo (indicar precio y años)",0,128]]
+};
+const MEM_F={16:.8,32:.88,64:.94,128:1,256:1.1,512:1.22,1024:1.35};
+const ANIOS=[["Menos de 1 año",.5],["1 a 2 años",1.5],["3 a 4 años",3.5],["5 años o más",6]];
+const USO=[["Cuidado","Funda y protector desde el primer día",1.03],["Normal","Uso diario",1],["Intensivo","Juegos, vídeo, muchas horas",.95]];
+const PANT=[["Perfecta","Sin marcas",1],["Microarañazos","Solo se ven con luz",.97],["Arañazos visibles","Se notan, pero se ve bien",.9],["Manchas o líneas","Pantalla con fallo",.7],["Rota o con grietas","",0]];
+const MARCO=[["Impecable","",1],["Marcas leves","",.96],["Golpes y abolladuras","",.88],["Doblado","",.6]];
+
+const $=id=>document.getElementById(id);
+const fmt=n=>{n=Math.max(0,n);const r=n>=100?Math.round(n/5)*5:Math.round(n);return r.toLocaleString('es-ES')+' €'};
+
+// selects
+const sel=$('modelo');
+Object.entries(MODELOS).forEach(([marca,lista])=>{
+  const g=document.createElement('optgroup');g.label=marca;
+  lista.forEach((m,i)=>{const o=document.createElement('option');o.value=marca+'|'+i;o.textContent=m[0];g.appendChild(o)});
+  sel.appendChild(g);
+});
+sel.value="Apple|11";
+function modeloActual(){const [m,i]=sel.value.split('|');return MODELOS[m][+i]}
+function pintarMem(){
+  const base=modeloActual()[2];
+  const prev=+$('mem').value;
+  $('mem').innerHTML='';
+  const lista=[16,32,64,128,256,512,1024].filter(v=>v>=base/2&&v<=base*8);
+  lista.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v===1024?'1 TB':v+' GB';$('mem').appendChild(o)});
+  $('mem').value=lista.includes(prev)?prev:base;
+}
+function radios(id,lista,name,def,hasSub){
+  lista.forEach((e,i)=>{
+    const l=document.createElement('label');l.className='chip';
+    const val=hasSub==='uso'?e[2]:(name==='anios'?e[1]:e[hasSub?2:2]);
+    l.innerHTML=`<input type="radio" name="${name}" value="${val}" data-n="${e[0]}" ${i===def?'checked':''}><span>${e[0]}${e[1]&&typeof e[1]==='string'?`<small>${e[1]}</small>`:''}</span>`;
+    $(id).appendChild(l);
+  });
+}
+radios('anios',ANIOS,'anios',1,false);
+radios('uso',USO,'uso',1,'uso');
+radios('pantalla',PANT,'pantalla',0,true);
+radios('marco',MARCO,'marco',0,true);
+const R=n=>document.querySelector(`input[name=${n}]:checked`);
+
+// costes de reparación según el valor del móvil
+const tier=(p,arr)=>p<80?arr[0]:p<150?arr[1]:p<300?arr[2]:p<500?arr[3]:arr[4];
+const C_PANT=[30,50,90,150,250], C_BAT=[25,30,55,70,90], C_TRAS=[15,20,50,80,110], C_CAM=[15,25,60,90,130], C_PUERTO=[25,30,45,55,70], C_BIO=[30,45,80,120,170], C_AUD=[20,25,35,45,55], C_BOT=[20,25,35,40,50];
+
+function bateriaEstimada(anios,uso){
+  let b=anios<1?95:anios<2.5?89:anios<4.5?83:75;
+  if(uso<1)b-=4;if(uso>1)b+=2;
+  return b;
+}
+
+function calc(){
+  const m=modeloActual(), esOtro=m[1]===0, out=[], avisos=[];
+  $('otroBox').classList.toggle('hidden',!esOtro);
+  const anios=+R('anios').value, uso=+R('uso').value;
+  let base;
+  if(esOtro){
+    const orig=Math.max(50,+$('pOrig').value||0), an=Math.max(0,+$('anOrig').value||0);
+    base=Math.max(orig*Math.pow(.68,an),orig*.07);
+  }else base=m[1];
+
+  const memF=esOtro?1:(MEM_F[+$('mem').value]||1)/(MEM_F[m[2]]||1);
+  let p=base*memF;
+  const bueno=p;
+  out.push(['Valor del modelo en buen estado',fmt(p)]);
+  if(Math.abs(memF-1)>.001) out.push(['Memoria',(memF>1?'+':'')+Math.round((memF-1)*100)+'%']);
+
+  // uso
+  p*=uso;
+  if(uso!==1) out.push(['Tipo de uso ('+R('uso').dataset.n.toLowerCase()+')',(uso>1?'+':'')+Math.round((uso-1)*100)+'%']);
+
+  // batería
+  let bat=+$('bat').value||0, estimada=false;
+  if(!bat){bat=bateriaEstimada(anios,uso);estimada=true}
+  bat=Math.min(100,Math.max(40,bat));
+  const cBat=tier(base,C_BAT);
+  let dB=0;
+  if(bat<70)dB=cBat*1.1;else if(bat<80)dB=cBat*.8;else if(bat<85)dB=cBat*.35;
+  if(dB>0){p-=dB;out.push(['Batería '+(estimada?'estimada ':'')+bat+'%','−'+fmt(dB)])}
+  else if(bat>=92){p*=1.02;out.push(['Batería en muy buen estado','+2%'])}
+
+  // pantalla
+  const pant=R('pantalla'), pf=+pant.value;
+  if(pant.dataset.n==='Rota o con grietas'){
+    const c=tier(base,C_PANT)*1.15;p-=c;out.push(['Pantalla rota (reparación)','−'+fmt(c)]);
+  }else if(pf!==1){p*=pf;out.push(['Pantalla: '+pant.dataset.n.toLowerCase(),Math.round((pf-1)*100)+'%'])}
+
+  // marco
+  const mar=R('marco'), mf=+mar.value;
+  if(mf!==1){p*=mf;out.push(['Marco: '+mar.dataset.n.toLowerCase(),Math.round((mf-1)*100)+'%'])}
+
+  // daños con coste de reparación
+  const dmg=[['trasera','Tapa trasera rota',C_TRAS],['camara','Cámara dañada',C_CAM],['carga','Puerto de carga',C_PUERTO],['bio','Huella o Face ID',C_BIO],['audio','Altavoz o micrófono',C_AUD],['botones','Botones',C_BOT]];
+  dmg.forEach(([id,label,arr])=>{ if($(id).checked){const c=tier(base,arr);p-=c;out.push([label,'−'+fmt(c)])} });
+
+  // multiplicadores
+  const mult=(id,f,label)=>{ if($(id).checked){p*=f;out.push([label,Math.round((f-1)*100)+'%'])} };
+  mult('wifi',.65,'Falla Wi-Fi, Bluetooth o cobertura');
+  mult('mojado',.6,'Ha tenido agua');
+  mult('pantnoorig',.92,'Pantalla no original');
+  mult('operador',.85,'Bloqueado por operador');
+  if($('caja').checked){p*=1.03;out.push(['Caja y cargador','+3%'])}
+
+  p=Math.max(p,base*.1);
+  p=Math.max(p,8);
+
+  // bloqueos
+  if($('noenciende').checked){
+    p=Math.min(p,base*.18);out.push(['No enciende (precio de reparación o piezas)','']);
+    avisos.push(['','Si no enciende, el precio es de reparación o recambios. Hace falta revisarlo en persona.']);
+  }
+  if($('cuenta').checked){
+    p=Math.min(p,base*.12);out.push(['Cuenta iCloud o Google puesta','Solo piezas']);
+    avisos.push(['bad','Con la cuenta puesta nadie puede usarlo. Quítala antes de venderlo: cerrar sesión y borrar el móvil. Si no, solo vale para piezas.']);
+  }
+  if($('imei').checked){
+    p=Math.min(p,base*.05);out.push(['IMEI bloqueado','Solo piezas']);
+    avisos.push(['bad','Con el IMEI bloqueado no funciona en ninguna red de España. No se puede vender como móvil.']);
+  }
+  if(base>=300&&$('noenciende').checked===false&&bat<70) avisos.push(['','Con la batería tan baja, cámbiala antes de vender: se nota en el precio.']);
+
+  const venta=p, compra=p*.7, rg=.12;
+  $('pCompra').textContent=fmt(compra);
+  $('rCompra').textContent='Entre '+fmt(compra*(1-rg))+' y '+fmt(compra*(1+rg));
+  $('pVenta').textContent=fmt(venta);
+  $('pBuen').textContent=fmt(bueno);
+  $('avisos').innerHTML=avisos.map(a=>`<div class="alert ${a[0]}">${a[1]}</div>`).join('');
+  $('desglose').innerHTML=out.map(d=>`<li><span>${d[0]}</span><b>${d[1]}</b></li>`).join('');
+  window._t={nombre:m[0],mem:+$('mem').value,esOtro,compra,venta,pantalla:pant.dataset.n,marco:mar.dataset.n,bat,estimada,anios:R('anios').dataset.n};
+}
+
+sel.addEventListener('change',()=>{pintarMem();calc()});
+document.querySelectorAll('input,select').forEach(e=>{if(e.id!=='modelo')e.addEventListener('input',calc);e.addEventListener('change',calc)});
+
+$('copiar').addEventListener('click',async()=>{
+  const t=window._t;
+  const memTxt=t.esOtro?'':' '+(t.mem===1024?'1 TB':t.mem+' GB');
+  const txt=`Tasación: ${t.nombre}${memTxt}\nUso: ${t.anios}. Batería ${t.estimada?'~':''}${t.bat}%. Pantalla: ${t.pantalla.toLowerCase()}. Marco: ${t.marco.toLowerCase()}.\nTe lo compramos por ~${fmt(t.compra)}\nPrecio entre particulares: ~${fmt(t.venta)}`;
+  try{await navigator.clipboard.writeText(txt);$('copiar').textContent='Copiado'}catch(e){$('copiar').textContent='No se pudo copiar'}
+  setTimeout(()=>$('copiar').textContent='Copiar tasación',1800);
+});
+$('reset').addEventListener('click',()=>{
+  document.querySelectorAll('.checks input').forEach(c=>c.checked=false);
+  $('bat').value='';
+  document.querySelectorAll('#anios input')[1].checked=true;
+  document.querySelectorAll('#uso input')[1].checked=true;
+  document.querySelectorAll('#pantalla input')[0].checked=true;
+  document.querySelectorAll('#marco input')[0].checked=true;
+  sel.value="Apple|11";pintarMem();calc();window.scrollTo({top:0,behavior:'smooth'});
+});
+pintarMem();calc();
+</script>
+</body>
+</html>
